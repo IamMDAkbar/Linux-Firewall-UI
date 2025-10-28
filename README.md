@@ -1,4 +1,4 @@
-# Kali Firewall Manager (Swing)
+# Linux Firewall - Kali Firewall Manager (Swing)
 
 This project provides a Java Swing UI for managing `firewalld` on Kali Linux. It uses FlatLaf for a modern dark theme and runs `firewall-cmd` via `pkexec` / `ProcessBuilder`.
 
@@ -74,10 +74,8 @@ Security & Privileges
 	- Create a small wrapper script that restricts allowed arguments and permit only that wrapper in sudoers if you need stricter control.
 
 Credits
-- Original/fork reference: https://github.com/IamMDAkbar/LinuxFirewallUI
+- Original/fork reference: https://github.com/IamMDAkbar/Linux-Firewall-UI
 
 License
 - This project currently does not include an explicit license file. Add a LICENSE if you intend to open-source it.
 
-Contact
-- If you want this pushed to GitHub, provide a remote URL and I can add it and push for you (or follow the standard `git remote add origin ... && git push -u origin main`).
