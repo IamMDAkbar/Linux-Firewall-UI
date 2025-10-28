@@ -1,0 +1,39 @@
+# Maven
+/target/
+/.mvn/
+
+# Eclipse
+/.project
+/.classpath
+/.settings/
+
+# IntelliJ
+/.idea/
+*.iml
+out/
+
+# VS Code
+/.vscode/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Compiled class files
+**/*.class
+
+# JARs
+*.jar
+*.war
+
+# Generated files
+/generated-sources/
+
+# Local env
+.env
+
+# Temporary files
+*~
+*.tmp

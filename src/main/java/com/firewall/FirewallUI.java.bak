@@ -1,0 +1,250 @@
+package com.firewall;
+
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLaf;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.Vector;
+
+public class FirewallUI extends JFrame {
+    private JTable servicesTable;
+    private DefaultTableModel tableModel;
+    private JTextField portField;
+    private JTextField serviceNameField;
+    private JComboBox<String> protocolBox;
+    private JComboBox<String> zoneBox;
+    private JComboBox<String> durationBox;
+
+    public FirewallUI() {
+        initializeUI();
+        loadFirewallServices();
+    }
+
+    private void initializeUI() {
+        setTitle("Kali Firewall Manager");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(1000, 600);
+        setLocationRelativeTo(null);
+
+        // Main panel with border layout
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Create table
+        String[] columnNames = {"Service/Port", "Protocol", "Zone", "Status"};
+        tableModel = new DefaultTableModel(columnNames, 0);
+        servicesTable = new JTable(tableModel);
+        JScrollPane scrollPane = new JScrollPane(servicesTable);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        // Control Panel
+        JPanel controlPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        
+        // Input fields
+        serviceNameField = new JTextField(15);
+        portField = new JTextField(15);
+        protocolBox = new JComboBox<>(new String[]{"tcp", "udp"});
+        zoneBox = new JComboBox<>(new String[]{"public", "internal", "external", "dmz", "work", "home", "trusted"});
+        durationBox = new JComboBox<>(new String[]{"Permanent", "Temporary"});
+
+        // Add components to control panel
+        gbc.gridx = 0; gbc.gridy = 0;
+        controlPanel.add(new JLabel("Service Name:"), gbc);
+        gbc.gridx = 1;
+        controlPanel.add(serviceNameField, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 1;
+        controlPanel.add(new JLabel("Port:"), gbc);
+        gbc.gridx = 1;
+        controlPanel.add(portField, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 2;
+        controlPanel.add(new JLabel("Protocol:"), gbc);
+        gbc.gridx = 1;
+        controlPanel.add(protocolBox, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 3;
+        controlPanel.add(new JLabel("Zone:"), gbc);
+        gbc.gridx = 1;
+        controlPanel.add(zoneBox, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 4;
+        controlPanel.add(new JLabel("Duration:"), gbc);
+        gbc.gridx = 1;
+        controlPanel.add(durationBox, gbc);
+
+        // Buttons Panel
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JButton addButton = new JButton("Add Service/Port");
+        JButton removeButton = new JButton("Remove Service/Port");
+        JButton refreshButton = new JButton("Refresh");
+        JButton reloadButton = new JButton("Reload Firewall");
+
+        buttonsPanel.add(addButton);
+        buttonsPanel.add(removeButton);
+        buttonsPanel.add(refreshButton);
+        buttonsPanel.add(reloadButton);
+
+        // Action Listeners
+        addButton.addActionListener(e -> addService());
+        removeButton.addActionListener(e -> removeService());
+        refreshButton.addActionListener(e -> loadFirewallServices());
+        reloadButton.addActionListener(e -> reloadFirewall());
+
+        // Add panels to main panel
+        JPanel southPanel = new JPanel(new BorderLayout());
+        southPanel.add(controlPanel, BorderLayout.CENTER);
+        southPanel.add(buttonsPanel, BorderLayout.SOUTH);
+        mainPanel.add(southPanel, BorderLayout.SOUTH);
+
+        add(mainPanel);
+    }
+
+    private void addService() {
+        String serviceName = serviceNameField.getText();
+        String port = portField.getText();
+        String protocol = (String) protocolBox.getSelectedItem();
+        String zone = (String) zoneBox.getSelectedItem();
+        boolean isPermanent = durationBox.getSelectedItem().equals("Permanent");
+
+        if (serviceName.isEmpty() || port.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill in both service name and port fields.");
+            return;
+        }
+
+        try {
+            String command;
+            if (isPermanent) {
+                command = String.format("pkexec firewall-cmd --permanent --zone=%s --add-port=%s/%s", 
+                    zone, port, protocol);
+            } else {
+                command = String.format("pkexec firewall-cmd --zone=%s --add-port=%s/%s", 
+                    zone, port, protocol);
+            }
+
+            ProcessBuilder pb = new ProcessBuilder("bash", "-c", command);
+            Process process = pb.start();
+            int exitCode = process.waitFor();
+
+            if (exitCode == 0) {
+                if (isPermanent) {
+                    reloadFirewall();
+                }
+                loadFirewallServices();
+                JOptionPane.showMessageDialog(this, "Service added successfully!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to add service. Check permissions and try again.");
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+        }
+    }
+
+    private void removeService() {
+        int selectedRow = servicesTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a service to remove.");
+            return;
+        }
+
+        String service = (String) tableModel.getValueAt(selectedRow, 0);
+        String protocol = (String) tableModel.getValueAt(selectedRow, 1);
+        String zone = (String) tableModel.getValueAt(selectedRow, 2);
+
+        try {
+            String command = String.format("pkexec firewall-cmd --permanent --zone=%s --remove-port=%s/%s", 
+                zone, service, protocol);
+            
+            ProcessBuilder pb = new ProcessBuilder("bash", "-c", command);
+            Process process = pb.start();
+            int exitCode = process.waitFor();
+
+            if (exitCode == 0) {
+                reloadFirewall();
+                loadFirewallServices();
+                JOptionPane.showMessageDialog(this, "Service removed successfully!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to remove service. Check permissions and try again.");
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+        }
+    }
+
+    private void loadFirewallServices() {
+        tableModel.setRowCount(0);
+        try {
+            String command = "firewall-cmd --list-all";
+            ProcessBuilder pb = new ProcessBuilder("bash", "-c", command);
+            Process process = pb.start();
+            
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            String currentZone = "public";
+            
+            while ((line = reader.readLine()) != null) {
+                if (line.contains("zone=")) {
+                    currentZone = line.split("=")[1].trim();
+                }
+                if (line.contains("ports:")) {
+                    String[] ports = line.substring(line.indexOf(":") + 1).trim().split(" ");
+                    for (String port : ports) {
+                        if (!port.isEmpty()) {
+                            String[] parts = port.split("/");
+                            if (parts.length == 2) {
+                                Vector<String> row = new Vector<>();
+                                row.add(parts[0]); // port
+                                row.add(parts[1]); // protocol
+                                row.add(currentZone); // zone
+                                row.add("Active"); // status
+                                tableModel.addRow(row);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error loading firewall services: " + ex.getMessage());
+        }
+    }
+
+    private void reloadFirewall() {
+        try {
+            ProcessBuilder pb = new ProcessBuilder("pkexec", "firewall-cmd", "--reload");
+            Process process = pb.start();
+            int exitCode = process.waitFor();
+
+            if (exitCode == 0) {
+                loadFirewallServices();
+                JOptionPane.showMessageDialog(this, "Firewall reloaded successfully!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to reload firewall. Check permissions and try again.");
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error reloading firewall: " + ex.getMessage());
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                // Set the look and feel
+                FlatLaf.setup(new FlatDarkLaf());
+                UIManager.put("Button.arc", 10);
+                UIManager.put("Component.arc", 10);
+                UIManager.put("ProgressBar.arc", 10);
+                UIManager.put("TextComponent.arc", 10);
+                
+                new MainFrame().setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+}
