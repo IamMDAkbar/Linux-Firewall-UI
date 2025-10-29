@@ -8,6 +8,12 @@ Important files:
 - `src/main/java/com/firewall/PortManagerPanel.java` - UI to add/remove/list ports
 - `src/main/java/com/firewall/ZoneManagerPanel.java` - basic zone management UI
 - `src/main/java/com/firewall/ServicesPanel.java` - services listing and add/remove
+- `src/main/java/com/firewall/RichRulesPanel.java` - builder UI for firewalld "rich rules" (create/list/remove)
+- `src/main/java/com/firewall/PortForwardingPanel.java` - UI for managing port forwarding rules
+- `src/main/java/com/firewall/MasqueradingPanel.java` - controls for zone masquerading (SNAT)
+- `src/main/java/com/firewall/ICMPControlPanel.java` - manage ICMP message blocking
+- `src/main/java/com/firewall/IPSetsPanel.java` - create and manage IP sets
+- `src/main/java/com/firewall/LoggingMonitoringPanel.java` - configure logging and monitor firewall activity
 
 How to build:
 ```bash
@@ -50,6 +56,8 @@ Folder structure (important files)
 	- `SettingsPanel.java` — theme choice, background chooser, and privilege setup helper (Preferences-backed).
 	- `DocumentationPanel.java` — loads `docs.md` and displays help text.
 	- `PortManagerPanel.java`, `ZoneManagerPanel.java`, `ServicesPanel.java` — feature panels wired from MainFrame.
+	- `PortManagerPanel.java`, `ZoneManagerPanel.java`, `ServicesPanel.java`, `PortForwardingPanel.java` — feature panels wired from MainFrame.
+	- `PortManagerPanel.java`, `ZoneManagerPanel.java`, `ServicesPanel.java`, `PortForwardingPanel.java`, `MasqueradingPanel.java`, `ICMPControlPanel.java`, `IPSetsPanel.java` — feature panels wired from MainFrame.
 - `src/main/resources/docs.md` — documentation loaded into the app.
 - `run.sh` — convenience script to build+run via Maven exec.
 - `pom.xml` — build manifest (Maven dependencies).
@@ -65,6 +73,7 @@ Features
 - Dashboard: status, counts for zones/services/ports and a Refresh action.
 - Quick Actions: reload firewall, show state, show active zones.
 - Feature cards: Zone Management, Services Control, Port Management, and placeholders for advanced features.
+ - Rich Rules: a simple rule-builder that constructs firewalld rich rule strings, previews them, and calls `firewall-cmd --add-rich-rule` / `--remove-rich-rule` or `--list-rich-rules` for a zone.
 - Settings: theme switching (Light/Dark), background chooser, privilege helper (visudo line copy/test).
 - Documentation: in-app docs pulled from `src/main/resources/docs.md`.
 

@@ -58,6 +58,8 @@ public class MainFrame extends JFrame {
     centerCards.setOpaque(false);
     centerCards.add(createMainContent(), "home");
     centerCards.add(new DashboardPanel(), "dashboard");
+    centerCards.add(new LockdownPanel(), "lockdown");
+    centerCards.add(new BackendConfigPanel(), "backend");
     centerCards.add(new SettingsPanel(), "settings");
     centerCards.add(new DocumentationPanel(), "docs");
     contentWrapper.add(centerCards, BorderLayout.CENTER);
@@ -132,6 +134,10 @@ public class MainFrame extends JFrame {
     sidebar.add(createSidebarButton("🏡 Home", e -> showCard("home")));
     sidebar.add(Box.createVerticalStrut(8));
     sidebar.add(createSidebarButton("🏠 Dashboard", e -> showCard("dashboard")));
+    sidebar.add(Box.createVerticalStrut(8));
+    sidebar.add(createSidebarButton("🔒 Lockdown", e -> showCard("lockdown")));
+    sidebar.add(Box.createVerticalStrut(8));
+    sidebar.add(createSidebarButton("🔧 Backend", e -> showCard("backend")));
     sidebar.add(Box.createVerticalStrut(8));
     sidebar.add(createSidebarButton("⚙️ Settings", e -> showCard("settings")));
     sidebar.add(Box.createVerticalStrut(8));
@@ -241,11 +247,11 @@ public class MainFrame extends JFrame {
         // Advanced Rules Section
         content.add(createFeatureSection("Advanced Rules",
             new FeatureCard("Rich Rules", "Create complex firewall rules with detailed conditions", 
-                "📋", e -> openWindow("Rich Rules", makePlaceholder("Rich Rules"))),
+                "📋", e -> openWindow("Rich Rules", new RichRulesPanel())),
             new FeatureCard("Port Forwarding", "Configure port forwarding and redirection", 
-                "↔️", e -> openWindow("Port Forwarding", makePlaceholder("Port Forwarding"))),
+                "↔️", e -> openWindow("Port Forwarding", new PortForwardingPanel())),
             new FeatureCard("Masquerading & NAT", "Set up network address translation", 
-                "🔀", e -> openWindow("Masquerading & NAT", makePlaceholder("Masquerading & NAT")))
+                "🔀", e -> openWindow("Masquerading & NAT", new MasqueradingPanel()))
         ));
         
         content.add(Box.createVerticalStrut(25));
@@ -253,11 +259,11 @@ public class MainFrame extends JFrame {
         // System & Monitoring Section
         content.add(createFeatureSection("System & Monitoring",
             new FeatureCard("ICMP Control", "Manage ICMP protocol settings", 
-                "📡", e -> openWindow("ICMP Control", makePlaceholder("ICMP Control"))),
+                "📡", e -> openWindow("ICMP Control", new ICMPControlPanel())),
             new FeatureCard("IP Sets", "Define and manage IP address sets", 
-                "📝", e -> openWindow("IP Sets", makePlaceholder("IP Sets"))),
+                "📝", e -> openWindow("IP Sets", new IPSetsPanel())),
             new FeatureCard("Logging & Monitoring", "View firewall logs and activity", 
-                "📊", e -> openWindow("Logging & Monitoring", makePlaceholder("Logging & Monitoring")))
+                "📊", e -> openWindow("Logging & Monitoring", new LoggingMonitoringPanel()))
         ));
         
         content.add(Box.createVerticalStrut(25));
